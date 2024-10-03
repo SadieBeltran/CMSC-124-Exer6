@@ -7,15 +7,16 @@ start() ->
 	net_adm:ping('c@acer-Altos-P10-F8').
 
 start_pong() ->
-	register (pong, spawn(pingpong,pong,[])).
+	register(pong, spawn(pingpong,pong,[])).
 
 pong() ->
 	receive
 		finished ->
-			io:format("Pong finished ~n");
+			io:format("Pong finished ~s left~n", [Ping_Pid]);
 		{Message, Ping_Pid} ->
-			io:format("Pong got ping~n"),
-			Ping_Pid ! pong
+			io:format("Pong got ping ~B~n", [Message]),
+			Ping_Pid ! pong,
+		pong()
 	end.
 
 start_ping([Pong_Node|Next_Node]) ->
@@ -28,6 +29,7 @@ start_ping([]) ->
 ping(0, Pong_Node) ->
 	{pong, Pong_Node} ! finished,
 	io:format("Ping finished ~n");
+
 ping(N, Pong_Node) ->
 	{pong, Pong_Node} ! {N, self()},
 	receive
